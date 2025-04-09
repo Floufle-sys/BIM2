@@ -1,19 +1,892 @@
-<!doctype html>
-<html>
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<title>My static Space</title>
-		<link rel="stylesheet" href="style.css" />
-	</head>
-	<body>
-		<div class="card">
-			<h1>Welcome to your static Space!</h1>
-			<p>You can modify this app directly by editing <i>index.html</i> in the Files and versions tab.</p>
-			<p>
-				Also don't forget to check the
-				<a href="https://huggingface.co/docs/hub/spaces" target="_blank">Spaces documentation</a>.
-			</p>
-		</div>
-	</body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Budget Impact Model</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .slide-in {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .input-highlight {
+            transition: all 0.3s ease;
+        }
+        .input-highlight:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+        }
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl font-bold text-blue-800 mb-2">Healthcare Budget Impact Model</h1>
+            <p class="text-lg text-gray-600">Evaluate the financial impact of new healthcare interventions</p>
+            <div class="mt-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <p class="text-blue-800"><i class="fas fa-info-circle mr-2"></i>This tool helps healthcare decision-makers assess the financial implications of adopting new treatments or interventions.</p>
+            </div>
+        </header>
+
+        <!-- Model Navigation Tabs -->
+        <div class="flex border-b border-gray-200 mb-8">
+            <button onclick="showTab('population')" class="tab-button px-6 py-3 text-gray-600 hover:text-blue-800 transition-colors tab-active" id="population-tab">
+                <i class="fas fa-users mr-2"></i>Target Population
+            </button>
+            <button onclick="showTab('current-care')" class="tab-button px-6 py-3 text-gray-600 hover:text-blue-800 transition-colors" id="current-care-tab">
+                <i class="fas fa-procedures mr-2"></i>Current Care
+            </button>
+            <button onclick="showTab('new-intervention')" class="tab-button px-6 py-3 text-gray-600 hover:text-blue-800 transition-colors" id="new-intervention-tab">
+                <i class="fas fa-pills mr-2"></i>New Intervention
+            </button>
+            <button onclick="showTab('cost-analysis')" class="tab-button px-6 py-3 text-gray-600 hover:text-blue-800 transition-colors" id="cost-analysis-tab">
+                <i class="fas fa-calculator mr-2"></i>Cost Analysis
+            </button>
+            <button onclick="showTab('results')" class="tab-button px-6 py-3 text-gray-600 hover:text-blue-800 transition-colors" id="results-tab">
+                <i class="fas fa-chart-bar mr-2"></i>Results
+            </button>
+        </div>
+
+        <!-- Target Population Section -->
+        <div id="population" class="model-section slide-in">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h2 class="text-2xl font-semibold text-blue-800 mb-6"><i class="fas fa-users mr-2"></i>Target Population Definition</h2>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">Population Characteristics</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Total Population Size</label>
+                                <input type="number" id="population-size" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="100000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Condition Prevalence (%)</label>
+                                <input type="number" id="prevalence" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="2.5" step="0.1">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Annual Incidence Rate (%)</label>
+                                <input type="number" id="incidence" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="0.5" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">Subgroup Analysis</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Age Distribution</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div>
+                                        <label class="block text-xs text-gray-600 mb-1">18-40</label>
+                                        <input type="number" class="input-highlight w-full px-3 py-1 border border-gray-300 rounded-md focus:outline-none" value="30">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-600 mb-1">41-65</label>
+                                        <input type="number" class="input-highlight w-full px-3 py-1 border border-gray-300 rounded-md focus:outline-none" value="50">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-600 mb-1">65+</label>
+                                        <input type="number" class="input-highlight w-full px-3 py-1 border border-gray-300 rounded-md focus:outline-none" value="20">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Gender Distribution</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-xs text-gray-600 mb-1">Male</label>
+                                        <input type="number" class="input-highlight w-full px-3 py-1 border border-gray-300 rounded-md focus:outline-none" value="45">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-600 mb-1">Female</label>
+                                        <input type="number" class="input-highlight w-full px-3 py-1 border border-gray-300 rounded-md focus:outline-none" value="55">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-semibold text-blue-800 mb-6"><i class="fas fa-chart-line mr-2"></i>Population Summary</h2>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">Calculated Metrics</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-gray-700">Affected Population</span>
+                                <span id="affected-population" class="font-medium">2,500</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-gray-700">New Cases Annually</span>
+                                <span id="new-cases" class="font-medium">500</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-gray-700">Prevalent Cases</span>
+                                <span id="prevalent-cases" class="font-medium">2,000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">Population Visualization</h3>
+                        <div class="h-64">
+                            <canvas id="populationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end">
+                <button onclick="showTab('current-care')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors">
+                    Next: Current Standard of Care <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Current Standard of Care Section -->
+        <div id="current-care" class="model-section hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h2 class="text-2xl font-semibold text-blue-800 mb-6"><i class="fas fa-procedures mr-2"></i>Current Standard of Care</h2>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">Treatment Patterns</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Current Treatment Options</label>
+                                <textarea id="treatment-options" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none h-24">Standard Drug Therapy, Surgical Intervention, Physical Therapy</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Treatment Distribution (%)</label>
+                                <div id="treatment-distribution" class="space-y-2">
+                                    <div class="flex items-center">
+                                        <input type="text" class="input-highlight w-1/2 px-3 py-1 border border-gray-300 rounded-md mr-2" value="Standard Drug Therapy" placeholder="Treatment name">
+                                        <input type="number" class="input-highlight w-1/4 px-3 py-1 border border-gray-300 rounded-md" value="60" placeholder="%">
+                                        <button onclick="removeTreatment(this)" class="ml-2 text-red-500 hover:text-red-700">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="text" class="input-highlight w-1/2 px-3 py-1 border border-gray-300 rounded-md mr-2" value="Surgical Intervention" placeholder="Treatment name">
+                                        <input type="number" class="input-highlight w-1/4 px-3 py-1 border border-gray-300 rounded-md" value="25" placeholder="%">
+                                        <button onclick="removeTreatment(this)" class="ml-2 text-red-500 hover:text-red-700">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="text" class="input-highlight w-1/2 px-3 py-1 border border-gray-300 rounded-md mr-2" value="Physical Therapy" placeholder="Treatment name">
+                                        <input type="number" class="input-highlight w-1/4 px-3 py-1 border border-gray-300 rounded-md" value="15" placeholder="%">
+                                        <button onclick="removeTreatment(this)" class="ml-2 text-red-500 hover:text-red-700">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button onclick="addTreatment()" class="mt-2 text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-plus mr-1"></i> Add Treatment Option
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">Resource Utilization</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Hospitalizations per Patient per Year</label>
+                                <input type="number" id="hospitalizations" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="1.2" step="0.1">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Outpatient Visits per Patient per Year</label>
+                                <input type="number" id="outpatient-visits" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="4.5" step="0.1">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Diagnostic Tests per Patient per Year</label>
+                                <input type="number" id="diagnostic-tests" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="3.0" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-semibold text-blue-800 mb-6"><i class="fas fa-money-bill-wave mr-2"></i>Cost Analysis</h2>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">Treatment Costs</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Average Annual Drug Cost per Patient ($)</label>
+                                <input type="number" id="drug-cost" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="3500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Average Surgical Cost per Procedure ($)</label>
+                                <input type="number" id="surgical-cost" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="15000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Average Physical Therapy Cost per Patient ($)</label>
+                                <input type="number" id="therapy-cost" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="2500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">Resource Costs</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Average Hospitalization Cost ($)</label>
+                                <input type="number" id="hospitalization-cost" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="8000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Average Outpatient Visit Cost ($)</label>
+                                <input type="number" id="outpatient-cost" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="250">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Average Diagnostic Test Cost ($)</label>
+                                <input type="number" id="diagnostic-cost" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="150">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-between">
+                <button onclick="showTab('population')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-md transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i> Previous
+                </button>
+                <button onclick="showTab('new-intervention')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors">
+                    Next: New Intervention <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- New Intervention Section -->
+        <div id="new-intervention" class="model-section hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h2 class="text-2xl font-semibold text-blue-800 mb-6"><i class="fas fa-pills mr-2"></i>New Intervention Details</h2>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">Intervention Characteristics</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Intervention Name</label>
+                                <input type="text" id="intervention-name" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="Novel Biologic Therapy">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <textarea id="intervention-desc" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none h-24">A new targeted therapy with improved efficacy and reduced side effects compared to current standard treatments.</textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Efficacy Improvement (%)</label>
+                                <input type="number" id="efficacy-improvement" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="25" step="1">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Reduction in Side Effects (%)</label>
+                                <input type="number" id="side-effect-reduction" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="40" step="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">Expected Impact on Resource Utilization</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Reduction in Hospitalizations (%)</label>
+                                <input type="number" id="hosp-reduction" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="30" step="1">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Reduction in Outpatient Visits (%)</label>
+                                <input type="number" id="outpatient-reduction" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="20" step="1">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Reduction in Diagnostic Tests (%)</label>
+                                <input type="number" id="diagnostic-reduction" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="15" step="1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-semibold text-blue-800 mb-6"><i class="fas fa-chart-pie mr-2"></i>Cost & Adoption</h2>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">Cost Parameters</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Annual Cost per Patient ($)</label>
+                                <input type="number" id="intervention-cost" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="12000">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Administration Cost per Dose ($)</label>
+                                <input type="number" id="admin-cost" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="150">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Monitoring Cost per Patient ($)</label>
+                                <input type="number" id="monitoring-cost" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="800">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">Adoption Rate Projection</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Time Horizon (Years)</label>
+                                <input type="number" id="time-horizon" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="5" min="1" max="10">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Year 1 Adoption Rate (%)</label>
+                                <input type="number" id="year1-adoption" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="10" step="1">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Year 2 Adoption Rate (%)</label>
+                                <input type="number" id="year2-adoption" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="25" step="1">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Year 3+ Adoption Rate (%)</label>
+                                <input type="number" id="year3-adoption" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="40" step="1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-between">
+                <button onclick="showTab('current-care')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-md transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i> Previous
+                </button>
+                <button onclick="showTab('cost-analysis')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors">
+                    Next: Cost Analysis <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Cost Analysis Section -->
+        <div id="cost-analysis" class="model-section hidden">
+            <h2 class="text-2xl font-semibold text-blue-800 mb-6"><i class="fas fa-calculator mr-2"></i>Cost Analysis</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">Perspective</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <input type="radio" id="payer-perspective" name="perspective" class="mr-2" checked>
+                            <label for="payer-perspective" class="text-gray-700">Payer Perspective</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="radio" id="hospital-perspective" name="perspective" class="mr-2">
+                            <label for="hospital-perspective" class="text-gray-700">Hospital Perspective</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="radio" id="societal-perspective" name="perspective" class="mr-2">
+                            <label for="societal-perspective" class="text-gray-700">Societal Perspective</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">Discount Rate</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Annual Discount Rate (%)</label>
+                            <input type="number" id="discount-rate" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="3.5" step="0.1">
+                        </div>
+                        <p class="text-xs text-gray-500">Applied to future costs beyond Year 1</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">Sensitivity Analysis</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Intervention Cost Variation (±%)</label>
+                            <input type="number" id="cost-variation" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="20" step="1">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Adoption Rate Variation (±%)</label>
+                            <input type="number" id="adoption-variation" class="input-highlight w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none" value="15" step="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Scenario Analysis</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scenario</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Intervention Cost</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Adoption Rate</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cost Impact</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Base Case</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$12,000</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10%-40%</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$4.2M</td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">High Cost</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$14,400 (+20%)</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10%-40%</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$5.0M</td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Low Adoption</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$12,000</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">8.5%-34% (-15%)</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$3.6M</td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Worst Case</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$14,400 (+20%)</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">8.5%-34% (-15%)</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$4.3M</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Tornado Diagram</h3>
+                <div class="h-64">
+                    <canvas id="tornadoChart"></canvas>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-between">
+                <button onclick="showTab('new-intervention')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-md transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i> Previous
+                </button>
+                <button onclick="calculateResults(); showTab('results')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors">
+                    View Results <i class="fas fa-chart-bar ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="model-section hidden">
+            <h2 class="text-2xl font-semibold text-blue-800 mb-6"><i class="fas fa-chart-bar mr-2"></i>Budget Impact Results</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">Key Metrics</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span class="text-gray-700">Total Current Costs</span>
+                            <span id="total-current-cost" class="font-medium">$10,500,000</span>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span class="text-gray-700">Total New Costs</span>
+                            <span id="total-new-cost" class="font-medium">$14,700,000</span>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span class="text-gray-700">Incremental Cost</span>
+                            <span id="incremental-cost" class="font-medium text-red-600">$4,200,000</span>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span class="text-gray-700">Cost per Patient</span>
+                            <span id="cost-per-patient" class="font-medium">$1,680</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">Cost Breakdown</h3>
+                    <div class="h-64">
+                        <canvas id="costBreakdownChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">Resource Savings</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span class="text-gray-700">Hospitalizations Avoided</span>
+                            <span id="hosp-avoided" class="font-medium text-green-600">720</span>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span class="text-gray-700">Outpatient Visits Avoided</span>
+                            <span id="outpatient-avoided" class="font-medium text-green-600">2,700</span>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span class="text-gray-700">Diagnostic Tests Avoided</span>
+                            <span id="diagnostic-avoided" class="font-medium text-green-600">900</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Annual Cost Projection</h3>
+                <div class="h-96">
+                    <canvas id="annualCostChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Summary Report</h3>
+                <div class="prose max-w-none">
+                    <p>The budget impact analysis evaluates the financial implications of adopting <span id="report-intervention-name" class="font-medium">Novel Biologic Therapy</span> for a target population of <span id="report-population" class="font-medium">2,500</span> patients with the condition.</p>
+                    
+                    <h4 class="text-md font-medium mt-4">Key Findings:</h4>
+                    <ul class="list-disc pl-5">
+                        <li>The total budget impact over <span id="report-years" class="font-medium">5</span> years is estimated at <span class="font-medium text-red-600">$4.2 million</span>.</li>
+                        <li>This represents an incremental cost of <span class="font-medium">$1,680</span> per patient.</li>
+                        <li>The new intervention is projected to reduce hospitalizations by <span class="font-medium text-green-600">720</span> and outpatient visits by <span class="font-medium text-green-600">2,700</span> over the time horizon.</li>
+                        <li>Sensitivity analysis shows the results are most sensitive to variations in the intervention cost and adoption rates.</li>
+                    </ul>
+                    
+                    <h4 class="text-md font-medium mt-4">Recommendations:</h4>
+                    <ul class="list-disc pl-5">
+                        <li>Consider implementing the new therapy in phases to manage budget impact.</li>
+                        <li>Negotiate pricing agreements to reduce the intervention cost.</li>
+                        <li>Monitor real-world adoption rates and adjust projections accordingly.</li>
+                        <li>Evaluate clinical benefits alongside financial impacts for a complete assessment.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-between">
+                <button onclick="showTab('cost-analysis')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-md transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i> Previous
+                </button>
+                <button onclick="generateReport()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition-colors">
+                    <i class="fas fa-file-pdf mr-2"></i> Generate PDF Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab navigation
+        function showTab(tabId) {
+            document.querySelectorAll('.model-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('tab-active');
+            });
+            
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById(tabId + '-tab').classList.add('tab-active');
+            
+            // Update charts when tab becomes visible
+            if (tabId === 'population') {
+                updatePopulationChart();
+            } else if (tabId === 'results') {
+                updateResultsCharts();
+            }
+        }
+
+        // Population calculations
+        function updatePopulationMetrics() {
+            const population = parseInt(document.getElementById('population-size').value) || 0;
+            const prevalence = parseFloat(document.getElementById('prevalence').value) || 0;
+            const incidence = parseFloat(document.getElementById('incidence').value) || 0;
+            
+            const affected = Math.round(population * prevalence / 100);
+            const newCases = Math.round(population * incidence / 100);
+            const prevalentCases = affected - newCases;
+            
+            document.getElementById('affected-population').textContent = affected.toLocaleString();
+            document.getElementById('new-cases').textContent = newCases.toLocaleString();
+            document.getElementById('prevalent-cases').textContent = prevalentCases.toLocaleString();
+            
+            updatePopulationChart();
+        }
+
+        // Population chart
+        let populationChart;
+        function updatePopulationChart() {
+            const ctx = document.getElementById('populationChart').getContext('2d');
+            const population = parseInt(document.getElementById('population-size').value) || 0;
+            const affected = Math.round(population * (parseFloat(document.getElementById('prevalence').value) || 0) / 100);
+            
+            if (populationChart) {
+                populationChart.destroy();
+            }
+            
+            populationChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['General Population', 'Affected Population'],
+                    datasets: [{
+                        data: [population - affected, affected],
+                        backgroundColor: ['#3b82f6', '#ef4444'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const percentage = Math.round((value / population) * 100);
+                                    return `${label}: ${value.toLocaleString()} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Treatment distribution management
+        function addTreatment() {
+            const container = document.getElementById('treatment-distribution');
+            const newTreatment = document.createElement('div');
+            newTreatment.className = 'flex items-center';
+            newTreatment.innerHTML = `
+                <input type="text" class="input-highlight w-1/2 px-3 py-1 border border-gray-300 rounded-md mr-2" placeholder="Treatment name">
+                <input type="number" class="input-highlight w-1/4 px-3 py-1 border border-gray-300 rounded-md" placeholder="%">
+                <button onclick="removeTreatment(this)" class="ml-2 text-red-500 hover:text-red-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.appendChild(newTreatment);
+        }
+
+        function removeTreatment(button) {
+            const container = document.getElementById('treatment-distribution');
+            if (container.children.length > 1) {
+                button.parentNode.remove();
+            } else {
+                alert('At least one treatment option must remain.');
+            }
+        }
+
+        // Tornado chart
+        let tornadoChart;
+        function createTornadoChart() {
+            const ctx = document.getElementById('tornadoChart').getContext('2d');
+            
+            tornadoChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Intervention Cost', 'Adoption Rate', 'Hospitalization Reduction', 'Outpatient Reduction'],
+                    datasets: [
+                        {
+                            label: 'Positive Impact',
+                            data: [15, 12, 8, 5],
+                            backgroundColor: '#10b981',
+                        },
+                        {
+                            label: 'Negative Impact',
+                            data: [-20, -18, -5, -3],
+                            backgroundColor: '#ef4444',
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Parameters Impact on Budget (in thousands)'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'Impact on Budget ($)'
+                            }
+                        },
+                        y: {
+                            stacked: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Results charts
+        let costBreakdownChart, annualCostChart;
+        function updateResultsCharts() {
+            // Cost Breakdown Chart
+            const costCtx = document.getElementById('costBreakdownChart').getContext('2d');
+            if (costBreakdownChart) {
+                costBreakdownChart.destroy();
+            }
+            costBreakdownChart = new Chart(costCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Drug Costs', 'Hospital Costs', 'Outpatient Costs', 'Admin Costs'],
+                    datasets: [
+                        {
+                            label: 'Current Care',
+                            data: [3500, 15000, 2500, 800],
+                            backgroundColor: '#3b82f6',
+                        },
+                        {
+                            label: 'New Intervention',
+                            data: [12000, 10500, 2000, 1500],
+                            backgroundColor: '#10b981',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Annual Cost per Patient Comparison'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Cost ($)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Annual Cost Projection Chart
+            const annualCtx = document.getElementById('annualCostChart').getContext('2d');
+            if (annualCostChart) {
+                annualCostChart.destroy();
+            }
+            annualCostChart = new Chart(annualCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'],
+                    datasets: [
+                        {
+                            label: 'Current Care Costs',
+                            data: [10500000, 10700000, 10900000, 11100000, 11300000],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'New Intervention Costs',
+                            data: [11550000, 12250000, 13300000, 14200000, 14700000],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Incremental Costs',
+                            data: [1050000, 1550000, 2400000, 3100000, 3400000],
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            borderDash: [5, 5]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: '5-Year Cost Projection'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Cost ($)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000000).toFixed(1) + 'M';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Calculate results
+        function calculateResults() {
+            // This would be a more complex calculation in a real implementation
+            // For this demo, we'll just update some placeholder values
+            
+            const population = parseInt(document.getElementById('population-size').value) || 0;
+            const prevalence = parseFloat(document.getElementById('prevalence').value) || 0;
+            const affected = Math.round(population * prevalence / 100);
+            
+            // Update report text
+            document.getElementById('report-intervention-name').textContent = 
+                document.getElementById('intervention-name').value || 'Novel Biologic Therapy';
+            document.getElementById('report-population').textContent = affected.toLocaleString();
+            document.getElementById('report-years').textContent = 
+                document.getElementById('time-horizon').value || '5';
+        }
+
+        // Generate PDF report
+        function generateReport() {
+            alert('In a real implementation, this would generate a PDF report with all the analysis results.');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up event listeners for population inputs
+            document.getElementById('population-size').addEventListener('input', updatePopulationMetrics);
+            document.getElementById('prevalence').addEventListener('input', updatePopulationMetrics);
+            document.getElementById('incidence').addEventListener('input', updatePopulationMetrics);
+            
+            // Initialize charts
+            createTornadoChart();
+            updatePopulationChart();
+            
+            // Calculate initial population metrics
+            updatePopulationMetrics();
+        });
+    </script>
+<p style="border-radius: 8px; text-align: center; font-size: 12px; color: #fff; margin-top: 16px;position: fixed; left: 8px; bottom: 8px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 4px 8px;">Made with <img src="https://enzostvs-deepsite.hf.space/logo.svg" alt="DeepSite Logo" style="width: 16px; height: 16px; vertical-align: middle;display:inline-block;margin-right:3px;filter:brightness(0) invert(1);"><a href="https://enzostvs-deepsite.hf.space" style="color: #fff;text-decoration: underline;" target="_blank" >DeepSite</a> - 🧬 <a href="https://enzostvs-deepsite.hf.space?remix=Mouble/budget-impact-model" style="color: #fff;text-decoration: underline;" target="_blank" >Remix</a></p></body>
 </html>
